@@ -1,0 +1,84 @@
+---
+title: "AssignmentPart1"
+author: "FX"
+date: "7 November 2018"
+output: html_document
+---
+### Comparison
+
+Both GUI and Command Line generate illustrations to present the viewer a graphical idea of the intended purpose of communication. 
+
+With GUI applications like Arcmap, authors are able to produce maps with great detail with sophisticated data provided. Also, these applications are commercial products, offical supports are avaliable for a variety of products under their wing. On the other hand, a closed environment like Arcmap will result in users following the designed steps by the software with no room for creativity.
+
+Commnad Line applications like RStudio provides the user with an open-source platform where users can create new libraries to be used in the application to achieve their desired outcome. This high level of flexibility is accompanied by many other libraries that are already avaliable online to download. On the Contrary, details of illustrations will be restrited to the level of comepetancy of the author in the understanding of libraries and functions avaliable. 
+
+As both types of applications are intended to create graphical illustrations of data, the number of details present will be a key determining factor. It is identifiable that Command Line maps are using raster data while GUI offers the compatibility with vector data. With the ability to process vector data, GUI will produce a more accurate illustrations than Command Line map with the size of map being significantly larger.
+
+To work with GUI is a series of operations with the software itself and it is less likely to be reproducible while COmmand Line offers the possibility to reproduce the work as each command is being written down. Each command will return a relative result that can be observed. 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r LondonMap}
+library(maptools)
+library(RColorBrewer)
+library(classInt)
+library(OpenStreetMap)
+library(sp)
+library(rgeos)
+library(tmap)
+library(tmaptools)
+library(sf)
+library(rgdal)
+library(geojsonio)
+library(tidyverse)
+library(shinyjs)
+
+EW <- geojson_read("http://geoportal.statistics.gov.uk/datasets/8edafbe3276d4b56aec60991cbddda50_2.geojson", what = "sp")
+
+#pull out london using grep and the regex wildcard for'start of the string' (^) to to look for the bit of the district code that relates to London (E09) from the 'lad15cd' column in the data slot of our spatial polygons dataframe
+LondonMap <- EW[grep("^E09",EW@data$lad15cd),]
+
+#read some data attributes
+LondonData <- read_csv("https://files.datapress.com/london/dataset/ward-profiles-and-atlas/2015-09-24T14:21:24/ward-profiles-excel-version.csv", na = "n/a")
+
+#convert to a simple features object
+LondonMapSF <- st_as_sf(LondonMap)
+
+#append the data to the geometries
+LondonMapSF <- append_data(LondonMapSF,LondonData, key.shp = "lad15cd", key.data = "New code", ignore.duplicates = TRUE)
+
+#plot a choropleth
+qtm(LondonMapSF, fill = "% Not Born in UK - 2011")
+
+#tm_shape(BoroughDataMap) +
+  #tm_polygons("X..children.in.year.6.who.are.obese..2011.12.to.2013.14",
+              #style="jenks",
+              #palette="PuRd",
+              #midpoint=NA,
+              #title="Truffle Shuffle Intensity")
+
+#plot it using the base plot function
+#qtm(LondonMap)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
